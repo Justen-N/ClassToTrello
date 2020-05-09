@@ -2,7 +2,7 @@
     "name":"Class to Trello",
     "description": " A productivity and learning tool integration",
     "version": "0.1",
-    "permissions": ["storage"],
+    "permissions": ["storage","identity"],
     "browser_action":{
         "default_popup": "index.html",
         "default_icon": "icons8-bridge-32.png"
