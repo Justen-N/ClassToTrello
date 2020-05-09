@@ -1,4 +1,2 @@
-chrome.runtime.sendMessage({redirect:})
+document.getElementById("connectTrello").addEventListener("click", launchTrelloAuth);
 
-
-d7d8a1df84c5d38d1d502c3dbff5f43a
