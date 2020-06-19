@@ -1,0 +1,2 @@
+var APP_KEY = 'f935a5dd15d3ee400b0e1160fa63c675';
+var C_APP_KEY = '10706~1wRyXgGWayo1N1kta4i9K0Hpcq0FWKfxcJlKaKr5mkhBI25LboQyuI7aoRfebNlV';

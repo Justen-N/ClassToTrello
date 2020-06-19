@@ -14,9 +14,14 @@
         "persistent": false
       },
     "content_scripts":[{
-        "matches":["https://*.instructure.com/*","https://trello.com/b/","https://trello.com/1/token/approve"],
-        "js":["lib/jquery-3.5.1.min.js","scripts/contentScript.js","lib/trello_client.js","scripts/token1.js"],
+        "matches":["https://*.instructure.com/*","https://trello.com/b/"],
+        "js":["lib/jquery-3.5.1.min.js","scripts/contentScript.js","lib/trello_client.js"],
         "run-at":"document_idle"
 
+    },
+    {
+        "matches":["https://trello.com/1/token/approve"],
+        "js":["scripts/token1.js"],
+        "run-at":"document_idle"
     }]
 }
