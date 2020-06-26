@@ -4,7 +4,6 @@
     "version": "0.1",
     "permissions": ["storage","identity","webNavigation","activeTab"],
     "browser_action":{
-        "default_popup": "index.html",
         "default_icon": "icons8-bridge-32.png"
 
     },
@@ -18,10 +17,7 @@
         "js":["lib/jquery-3.5.1.min.js","scripts/contentScript.js","lib/trello_client.js"],
         "run-at":"document_idle"
 
-    },
-    {
-        "matches":["https://trello.com/1/token/approve"],
-        "js":["scripts/token1.js"],
-        "run-at":"document_idle"
-    }]
+    }
+],
+    "web_accessible_resources":["/index.html"]
 }
