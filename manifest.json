@@ -2,7 +2,7 @@
     "name":"Class to Trello",
     "description": " A productivity and learning tool integration",
     "version": "0.1",
-    "permissions": ["storage","identity","webNavigation","activeTab","webRequest"],
+    "permissions": ["storage","identity","webNavigation","activeTab","https://*.instructure.com/*"],
     "browser_action":{
         "default_icon": "icons8-bridge-32.png"
     },

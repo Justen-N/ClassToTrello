@@ -1,14 +1,13 @@
-var trelloSuccess = function () {
-    //shouldn't get here... Can't do anything if it does
-}
-var trelloFailed = function () {
-    console.log("Failure!");
-}
-
 function init() {
     const appRedirect = chrome.identity.getRedirectURL();
-    console.log(appRedirect);
-    console.log(location.href);
+    const canvas_url = "https://byui.instructure.com/api/v1/"
+    url = location.href;
+    if (url.includes('token')) {
+        token = url.split('=')[1]
+        localStorage.setItem("trello_token", token);
+        $("#trello_logged_out").css("display", "none");
+        $('#trello_logged_in').css("display", "block");
+    }
     let tToken = localStorage.getItem("trello_token");
     if (tToken) {
         Trello.setKey(APP_KEY);
@@ -35,14 +34,12 @@ function init() {
             type: "redirect",
             name: "Class to Trello",
             interactive: true,
-            return_url: appRedirect + "/trello",
+            return_url: appRedirect,
             scope: {
                 read: true,
                 write: true
             },
-            expiration: "never",
-            trelloSuccess,
-            trelloFailed
+            expiration: "never"
         });
         $("#trello_logged_out").css("display", "none");
         $('#trello_logged_in').css("display", "block");
@@ -57,34 +54,32 @@ function init() {
         $("#trello_logged_out").css("display", "initial");
         location.reload();
     });
-    $("#canvas-access").click(function(){
-        
+    $("#canvas-access").click(function () {
+        window.open('./popup.html')
     });
     $("#trelloTutorial").click(function () {
         if (Trello.token()) {
-            Trello.get("/members/me/boards", {
-                fields: "name, id"
-            }, function (data, status, xhr) {
-                let presentFlag = false;
-                for (element of xhr.responseJSON) {
-                    if (element.name === "CTT Tutorial Board") {
-                        presentFlag = true;
-                        break;
-                    }
-                };
-                if (!presentFlag){
-                    Trello.post("boards", {
-                        name: "CTT Tutorial Board",
-                        desc: "A short tutorial in using Trello to manage your school work",
-                        idBoardSource:"5de6a962ec1e3a8fd67c27a2",
-                        keepFromSource: "cards"
-                    })
-                }
-            });
-        } else {
-            console.log("unauthorized");
+            if (!localStorage.getItem('tutorialBoard')) {
+                Trello.post("boards", {
+                    name: "CTT Tutorial Board",
+                    desc: "A short tutorial in using Trello to manage your school work",
+                    idBoardSource: "5de6a962ec1e3a8fd67c27a2",
+                    keepFromSource: "cards"
+                }).done(function (data) {
+                    console.debug(data)
+                    localStorage.setItem('tutorialBoard', data.url);
+                }).fail(function () {
+                    console.error('Could not create Tutorial Board')
+                })
+            }
+            //We will attempt to navigate to the board we created in any case.
+            window.open(localStorage.getItem('tutorialBoard'))
         }
+
     });
+
+
+    // this happens too much, but I can't be sure where this should be set, because my head hurts from redirects. 
     if (tToken) {
         $("#trello_logged_out").css("display", "none");
         $('#trello_logged_in').css("display", "block");
@@ -93,5 +88,88 @@ function init() {
         $('#trello_logged_in').css("display", "none");
     }
 
+    $('#canvas-load').click(function () {
+        $('.lds-grid').css("display", "inline-block");
+        var token = localStorage.getItem("canvas_token");
+
+        if (token) {
+            courses = $.get(canvas_url + "courses?access_token=" + token, {
+                "enrollment_type": "student",
+                "enrollment_state": "active",
+                "exclude_blueprint_courses": true
+            })
+            details = courses.then(function (data, status, xhr) {
+                var temp = xhr.responseJSON;
+                let courseDetails = new Array();
+                //console.debug(temp);
+                for (record in temp) {
+                    //console.debug(temp[record].name)
+
+                    details = {
+                        name: temp[record].name,
+                        id: temp[record].id,
+                        start_date: temp[record].start_at
+                    }
+                    if (details.name.includes("Majors") || details.name.includes("Devotional")) {
+                        continue;
+                    } else {
+                        courseDetails.push(details);
+                        $("#infoScroll").append(temp[record].name + " Found!<br>")
+                    }
+                }
+                //console.debug(courseDetails);
+                return courseDetails;
+            }, function () {
+                $("#infoScroll").innerhtml("Unable to find any course details. Please check your settings.")
+            });
+
+            $.when(assignments = details.then(function (data) {
+                //console.debug(data)
+                var assignmentArray = new Array();
+                for (record in data) {
+                    //console.debug(record);
+                    $.get(canvas_url + "courses/" + data[record].id + "/assignment_groups?access_token=" + token, {
+                        'include': ['assignments', 'all_dates']
+                    }).done(function (data) {
+                        assignmentArray.push(data);
+                    })
+                    $('#infoScroll').append(data[record].name + " Assignments Loaded!<br>");
+                }
+                console.debug(assignmentArray);
+                return assignmentArray;
+            }, function () {
+                $("#infoScroll").innerhtml("Unable to find any course details. Please check your settings.")
+            }), details.then(function (data) {
+                //console.debug(data);
+                var month = data[0].start_date.slice(6, 7)
+                var year = data[0].start_date.slice(0, 4);
+                console.debug(month)
+                console.debug(year)
+                var semester = {
+                    '4': 'Spring',
+                    '7': 'Summer',
+                    '9': 'Fall',
+                    '1': 'Winter'
+                }
+                var name = semester[month] + ' ' + year + '' + ' CTT Board'
+                if (!localStorage.getItem(name)) {
+                    Trello.post("boards", {
+                        name: name,
+                        desc: 'Assignment Tracking Board for CTT',
+                        idBoardSource: '5de6a50cdea679015427df47'
+                    }).done(function (data) {
+                        localStorage.setItem(name, data.url)
+                    })
+                } else {
+                    console.error('Unable to create the Current Semester Board')
+                }
+
+            })
+            ).done(function(data){
+                console.debug(data)
+            })}
+
+    })
 }
+
 $(document).ready(init);

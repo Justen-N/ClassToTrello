@@ -10,6 +10,31 @@
 </body>
 </html>
 <body>
-    <button href="index.html">GetStarted</button>
+    <article>
+        <h2>Canvas Access</h2>
+        <p>Canvas Oath Access for the BYU-Idaho Instance currently requires a User Generated Access token.
+            In order to create this token for your account, please navigate to your BYU-I Canvas Dashboard.
+        </p>
+        <h3>
+            From Your Dashboard:
+        </h3>
+        <ol>
+            <li>Click the Account button, on the top of the left navigation menu.</li>
+            <li>From the Account menu, select Settings.</li>
+            <li>Under the "Approved Integrations" section, select the "+New Access Token" button.</li>
+            <li>In the popup, enter "CTT Integration" in the "Purpose" field.</li>
+            <li>If you do not want to repeat this process, leave the "Expires" field blank.</li>
+            <li>Copy the value from the "Token" Field into the field labeled "Token" below. </li>
+        </ol>
+        <form id="tokenSubmit">
+            <label>Token:
+            <input type="text" id="token">
+            </label>
+            <button id="submit">Submit Token</button>
+            <p id="empty_token" style= "display:none"> Please enter your token value</p>
+        </form>
+        </article>
+    <script src="./lib/jquery-3.5.1.min.js"></script>
+    <script src="./scripts/token.js"></script>
 </body>
 </html>
