@@ -89,6 +89,7 @@ function init() {
     }
 
     $('#canvas-load').click(function () {
+        // shows the loading animations
         $('.lds-grid').css("display", "inline-block");
         var token = localStorage.getItem("canvas_token");
 
@@ -99,6 +100,7 @@ function init() {
                 "exclude_blueprint_courses": true
             })
             details = courses.then(function (data, status, xhr) {
+                // in here we get the course id, name and start_date values from the student's enrolled courses.
                 var temp = xhr.responseJSON;
                 let courseDetails = new Array();
                 //console.debug(temp);
@@ -124,6 +126,7 @@ function init() {
             });
 
             $.when(assignments = details.then(function (data) {
+                //this mess creates the assignments arrays to process
                 //console.debug(data)
                 var assignmentArray = new Array();
                 for (record in data) {
@@ -140,6 +143,7 @@ function init() {
             }, function () {
                 $("#infoScroll").innerhtml("Unable to find any course details. Please check your settings.")
             }), details.then(function (data) {
+                // this creates the Semester Specific board, and saves the url to a local variable
                 //console.debug(data);
                 var month = data[0].start_date.slice(6, 7)
                 var year = data[0].start_date.slice(0, 4);
@@ -164,10 +168,17 @@ function init() {
                     console.error('Unable to create the Current Semester Board')
                 }
 
-            })
-            ).done(function(data){
+            })).done([function (data) {
+                //data values here should be an array of arrays of objects(Yikes!)
+                // should create a list of assignments to be processed into cards
                 console.debug(data)
-            })}
+
+            }, details.then(function (data) {
+                //data values here are the class name, id and start dates
+                // creates Trello Labels for cards. 
+                console.debug(data)
+            })])
+        }
 
     })
 }
