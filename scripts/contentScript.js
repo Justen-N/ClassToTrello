@@ -125,7 +125,7 @@ function init() {
                 $("#infoScroll").innerhtml("Unable to find any course details. Please check your settings.")
             });
 
-            $.when(assignments = details.then(function (data) {
+            assignments = details.then(function (data) {
                 //this mess creates the assignments arrays to process
                 //console.debug(data)
                 var assignmentArray = new Array();
@@ -138,17 +138,18 @@ function init() {
                     })
                     $('#infoScroll').append(data[record].name + " Assignments Loaded!<br>");
                 }
-                console.debug(assignmentArray);
+                //console.debug(assignmentArray);
                 return assignmentArray;
-            }, function () {
+            }, function () {d 
                 $("#infoScroll").innerhtml("Unable to find any course details. Please check your settings.")
-            }), details.then(function (data) {
+            })
+            board = details.then(function (data) {
                 // this creates the Semester Specific board, and saves the url to a local variable
                 //console.debug(data);
                 var month = data[0].start_date.slice(6, 7)
                 var year = data[0].start_date.slice(0, 4);
-                console.debug(month)
-                console.debug(year)
+                //console.debug(month)
+                //console.debug(year)
                 var semester = {
                     '4': 'Spring',
                     '7': 'Summer',
@@ -156,28 +157,52 @@ function init() {
                     '1': 'Winter'
                 }
                 var name = semester[month] + ' ' + year + '' + ' CTT Board'
+               
                 if (!localStorage.getItem(name)) {
-                    Trello.post("boards", {
+                    boardRequest = Trello.post("boards", {
                         name: name,
                         desc: 'Assignment Tracking Board for CTT',
                         idBoardSource: '5de6a50cdea679015427df47'
-                    }).done(function (data) {
+                    }).done(function (data, status,request) {
                         localStorage.setItem(name, data.url)
+                        return request;
                     })
+                return boardRequest;
                 } else {
                     console.error('Unable to create the Current Semester Board')
                 }
 
-            })).done([function (data) {
-                //data values here should be an array of arrays of objects(Yikes!)
-                // should create a list of assignments to be processed into cards
-                console.debug(data)
+            })
+            var final = Promise.all([details, board]).then(function (values){
+                //console.debug(values);
+                var courses = values[0];
+                var board = values[1].id;
+                const labelColors = ['yellow','purple','blue','red','green','orange','black','sky', 'pink','lime'];
+                var labelParams = new Array();
+                for(var i = 0;i <courses.length;i++) {
+                    
+                    var labelInfo = {
+                        name:courses[i].name,
+                        color:labelColors[i],
+                        idBoard: board
+                    }
+                    //console.debug(labelInfo)
+                    labelParams.push(labelInfo)
+                };
+                var labelPostData  = new Array();
+                for (label in labelParams){
+                    //console.log(labelParams[label])
+                    var postData =Trello.post('labels',labelParams[label])
+                    labelPostData.push(postData)
+                }
+                return labelPostData;
+            })
+            Promise.all([assignments,details,final]).then(function(values){
+            console.log(values);
+            var unified_data= _.zip(values[0],values[1,values[2]])
+                console.debug(unified_data);
+            })
 
-            }, details.then(function (data) {
-                //data values here are the class name, id and start dates
-                // creates Trello Labels for cards. 
-                console.debug(data)
-            })])
         }
 
     })
