@@ -199,7 +199,7 @@ function init() {
             })
             Promise.all([assignments,details,final]).then(function(values){
             console.log(values);
-            var unified_data= _.zip(values[0],values[1,values[2]])
+            var unified_data= _.zip([values[0],values[1],values[2]])
                 console.debug(unified_data);
             })
 
